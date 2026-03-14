@@ -1,0 +1,56 @@
+id: CLIENT_SIDE_AUTH_ONLY
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-602"
+source:
+  name: "CWE-602: Client-Side Enforcement of Server-Side Security"
+  quote: "The product is composed of a server that relies on the client to implement a mechanism that is intended to protect the server."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.jsx"
+  - "*.tsx"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  # Pattern 1: Auth decision based on localStorage/sessionStorage - always suspicious
+  - "if\\s*\\(\\s*!?(localStorage|sessionStorage)\\.(getItem|get)\\(\\s*['\"`].*(token|jwt|auth|session|isLoggedIn|isAuthenticated|user)"
+  # Pattern 2: Boolean auth flags used in conditionals - likely client-only gate
+  # Matches standalone flags, excludes object methods (req.isAuthenticated handled by exclude_paths on server dirs)
+  - "if\\s*\\(\\s*!?(isLoggedIn|isAuthenticated|isAuth|loggedIn|authenticated)\\s*[)&|]"
+case_insensitive: true
+exclude_paths:
+  - "api/"
+  - "server/"
+  - "backend/"
+  - "routes/"
+  - "middleware/"
+  - "handlers/"
+  - "controllers/"
+  - "lib/server/"
+  - "src/server/"
+  - "src/api/"
+  - "functions/"
+message: "Client-side authentication check detected. This pattern is a classic LLM mistake: checking auth state in the browser provides ZERO security. An attacker can set localStorage values or modify JavaScript variables to bypass any client-side check."
+fix: |
+  Client-side auth checks are for UX only (redirecting to login page).
+  ALL authorization MUST happen server-side:
+    // Server-side middleware (Express example):
+    function authMiddleware(req, res, next) {
+      const token = req.cookies.token; // HttpOnly cookie
+      try {
+        const decoded = jwt.verify(token, SECRET);
+        req.user = decoded;
+        next();
+      } catch {
+        res.status(401).json({ error: 'Unauthorized' });
+      }
+    }
+  Every protected API route MUST use server-side middleware.
+  Client-side checks are ONLY for UI routing, never for security.

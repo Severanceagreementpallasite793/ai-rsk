@@ -1,0 +1,28 @@
+id: MISSING_HTTPONLY
+version: 2
+severity: BLOCK
+cwe:
+  - "CWE-1004"
+source:
+  name: "OWASP Session Management Cheat Sheet"
+  quote: "The HttpOnly cookie attribute instructs web browsers not to allow scripts to access cookies via the DOM document.cookie object"
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  - '\.cookie\s*\('
+  - 'Set-Cookie'
+negation: true
+negation_pattern: 'httpOnly\s*:\s*true|HttpOnly'
+case_insensitive: false
+message: "Cookie set without HttpOnly flag. JavaScript can access this cookie, making it vulnerable to XSS token theft."
+fix: |
+  Add httpOnly: true to your cookie options:
+    res.cookie('session', value, { httpOnly: true, secure: true, sameSite: 'strict' });

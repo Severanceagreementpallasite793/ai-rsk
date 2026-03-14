@@ -1,0 +1,40 @@
+[package]
+name = "ai-rsk"
+version = "0.1.0"
+edition = "2024"
+authors = ["Julien GELEE <julien.gelee@proton.me>"]
+description = "Security gate for AI-generated code - blocks the build until vulnerabilities are fixed"
+license = "MIT"
+repository = "https://github.com/Krigsexe/ai-rsk"
+keywords = ["security", "linting", "ai", "llm", "sast"]
+categories = ["command-line-utilities", "development-tools"]
+rust-version = "1.85"
+
+[dependencies]
+# Serialization: parse YAML rules, config files, JSON output
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = "1"
+# Recursive file traversal
+walkdir = "2"
+# Regex engine for Layer 1 pattern detection
+regex = "1"
+# Detect if external tools are installed (cross-platform `which`)
+which = "7"
+# CLI argument parsing
+clap = { version = "4", features = ["derive"] }
+# Error handling
+anyhow = "1.0"
+# Colored terminal output
+colored = "2"
+# Timestamps for scan reports
+chrono = "0.4"
+
+[dev-dependencies]
+# Temporary directories for tests
+tempfile = "3"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1

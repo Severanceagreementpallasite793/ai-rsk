@@ -1,0 +1,34 @@
+id: MISSING_CSP
+version: 1
+severity: WARN
+cwe:
+  - "CWE-693"
+source:
+  name: "CWE-693: Protection Mechanism Failure"
+  quote: "The product does not use or incorrectly uses a protection mechanism that provides sufficient defense against directed attacks."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  - "(app|server|router)\\.(use|get|listen)\\s*\\("
+negation: true
+negation_pattern: "content-security-policy|contentSecurityPolicy|helmet\\s*\\(|csp\\s*\\("
+case_insensitive: true
+message: "Server code detected without Content-Security-Policy header. CSP is the primary defense against XSS - without it, any injected script runs unrestricted in the user's browser."
+fix: |
+  Add CSP headers. Using helmet (recommended for Express/Fastify):
+    app.use(helmet());
+  Or manually:
+    app.use((req, res, next) => {
+      res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'");
+      next();
+    });
+  Start strict (default-src 'self') and loosen only as needed.
+  NEVER use 'unsafe-inline' or 'unsafe-eval' without understanding the risk.

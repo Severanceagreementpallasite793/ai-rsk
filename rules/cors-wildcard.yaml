@@ -1,0 +1,58 @@
+id: CORS_WILDCARD
+version: 1
+severity: WARN
+cwe:
+  - "CWE-942"
+source:
+  name: "CWE-942: Permissive Cross-domain Security Policy with Untrusted Domains"
+  quote: "The product uses a cross-domain policy file that includes domains that should not be trusted."
+  verified: true
+  verified_date: "2026-03-14"
+languages:
+  - javascript
+  - typescript
+  - python
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+  - "*.py"
+patterns:
+  # Express/Fastify CORS with origin: '*' or origin: true (allows all)
+  - "cors\\s*\\(\\s*\\{[^}]*origin\\s*:\\s*['\"`]\\*['\"`]"
+  - "cors\\s*\\(\\s*\\{[^}]*origin\\s*:\\s*true"
+  # cors() with no arguments (defaults to allow all)
+  - "app\\.use\\s*\\(\\s*cors\\s*\\(\\s*\\)\\s*\\)"
+  # Manual header set
+  - "Access-Control-Allow-Origin['\"`]?\\s*[:,]\\s*['\"`]\\*['\"`]"
+  # Flask-CORS wildcard
+  - "CORS\\s*\\(.*origins\\s*=\\s*['\"`]\\*['\"`]"
+  # Django CORS
+  - "CORS_ALLOW_ALL_ORIGINS\\s*=\\s*True"
+case_insensitive: false
+message: "CORS wildcard (*) detected - any website can make authenticated requests to your API. If your API uses cookies or tokens, an attacker's website can steal user data by making cross-origin requests. This is especially dangerous for APIs that handle payments, personal data, or authentication."
+fix: |
+  Restrict CORS to specific trusted origins:
+    // WRONG - allows any website:
+    app.use(cors());
+    app.use(cors({ origin: '*' }));
+
+    // RIGHT - whitelist specific origins:
+    app.use(cors({
+      origin: ['https://myapp.com', 'https://admin.myapp.com'],
+      credentials: true
+    }));
+
+    // RIGHT - dynamic validation:
+    app.use(cors({
+      origin: (origin, callback) => {
+        const allowed = ['https://myapp.com'];
+        if (!origin || allowed.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('CORS blocked'));
+        }
+      }
+    }));
+  NEVER use origin: '*' with credentials: true - browsers block it, but the misconfiguration reveals intent.

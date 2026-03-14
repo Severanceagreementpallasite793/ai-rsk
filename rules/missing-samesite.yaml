@@ -1,0 +1,27 @@
+id: MISSING_SAMESITE
+version: 2
+severity: BLOCK
+cwe:
+  - "CWE-1275"
+source:
+  name: "OWASP Session Management Cheat Sheet"
+  quote: "The SameSite attribute prevents the browser from sending the cookie along with cross-site requests"
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  - '\.cookie\s*\('
+negation: true
+negation_pattern: "sameSite\\s*:\\s*['\"]?(strict|lax|none)['\"]?"
+case_insensitive: true
+message: "Cookie set without SameSite flag. The cookie is vulnerable to CSRF attacks via cross-site requests."
+fix: |
+  Add sameSite: 'strict' (or 'lax') to your cookie options:
+    res.cookie('session', value, { httpOnly: true, secure: true, sameSite: 'strict' });

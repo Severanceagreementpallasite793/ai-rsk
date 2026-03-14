@@ -1,0 +1,42 @@
+id: WEBSOCKET_NO_AUTH
+version: 1
+severity: WARN
+cwe:
+  - "CWE-306"
+source:
+  name: "CWE-306: Missing Authentication for Critical Function"
+  quote: "The product does not perform any authentication for functionality that requires a provable user identity or consumes a significant amount of resources."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  - "(wss?|WebSocketServer|Server)\\s*\\(|on\\s*\\(\\s*['\"`]connection['\"`]"
+negation: true
+negation_pattern: "verifyClient|authenticate|token|authorization|auth|jwt\\.verify|cookie"
+case_insensitive: true
+message: "WebSocket server detected without apparent authentication. WebSocket connections bypass standard HTTP middleware - authentication must be verified during the upgrade handshake or on first message."
+fix: |
+  Verify authentication during the WebSocket upgrade:
+    const wss = new WebSocket.Server({
+      verifyClient: (info, done) => {
+        const token = parseCookies(info.req.headers.cookie).token;
+        try {
+          jwt.verify(token, SECRET);
+          done(true);
+        } catch {
+          done(false, 401, 'Unauthorized');
+        }
+      }
+    });
+  Or verify on connection:
+    wss.on('connection', (ws, req) => {
+      const user = authenticateFromCookie(req);
+      if (!user) { ws.close(1008, 'Unauthorized'); return; }
+    });

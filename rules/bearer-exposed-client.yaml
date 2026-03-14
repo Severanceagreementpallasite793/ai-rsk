@@ -1,0 +1,48 @@
+id: BEARER_EXPOSED_CLIENT
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-522"
+source:
+  name: "CWE-522: Insufficiently Protected Credentials"
+  quote: "The product transmits or stores authentication credentials, but it uses an insecure method that is susceptible to unauthorized interception and/or retrieval."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.jsx"
+  - "*.tsx"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  - "Authorization['\"`]?\\s*:\\s*['\"`]Bearer\\s"
+  - "Authorization['\"`]?\\s*:\\s*`Bearer\\s*\\$\\{"
+  - "headers\\s*\\.\\s*[Aa]uthorization\\s*=\\s*['\"`]Bearer"
+  - "setHeader\\s*\\(\\s*['\"`]Authorization['\"`]\\s*,\\s*['\"`]Bearer"
+case_insensitive: false
+exclude_paths:
+  - "api/"
+  - "server/"
+  - "backend/"
+  - "routes/"
+  - "middleware/"
+  - "handlers/"
+  - "controllers/"
+  - "lib/server/"
+  - "src/server/"
+  - "src/api/"
+  - "functions/"
+  - "netlify/functions/"
+  - "supabase/functions/"
+message: "Bearer token exposed in client-side code. Any XSS vulnerability allows an attacker to intercept the token from JavaScript. Tokens should be sent via HttpOnly cookies, not manual Authorization headers."
+fix: |
+  BACKEND: Set the token as an HttpOnly cookie instead of returning it to the client:
+    res.cookie('token', jwtValue, { httpOnly: true, secure: true, sameSite: 'strict' });
+  FRONTEND: Use credentials: 'include' to send cookies automatically:
+    fetch('/api/data', { credentials: 'include' })
+  REMOVE all manual Authorization: 'Bearer ...' headers from client-side code.
+  The server reads the token from the cookie, not from the Authorization header.

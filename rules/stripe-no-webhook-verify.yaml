@@ -1,0 +1,40 @@
+id: STRIPE_NO_WEBHOOK_VERIFY
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-345"
+source:
+  name: "CWE-345: Insufficient Verification of Data Authenticity"
+  quote: "The product does not sufficiently verify the origin or authenticity of data, in a way that causes it to accept invalid data."
+  verified: true
+  verified_date: "2026-03-14"
+languages:
+  - javascript
+  - typescript
+  - python
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+  - "*.py"
+patterns:
+  # Webhook endpoint for Stripe/PayPal/payment processors
+  - "(app|router)\\.(post|all)\\s*\\(\\s*['\"`][^'\"`]*(webhook|stripe|paypal|payment.?hook|checkout.?hook|billing.?hook)"
+negation: true
+negation_pattern: "constructEvent|verifyWebhookSignature|verify_webhook|stripe\\.webhooks|webhook_secret|whsec_|verify_header|verify_signature|hmac|crypto\\.createHmac"
+case_insensitive: true
+message: "Payment webhook endpoint detected without signature verification. Without verifying the webhook signature, an attacker can send fake payment events (fake 'payment_succeeded', fake refunds) and trigger business logic with forged data. This directly impacts revenue and can cause financial loss."
+fix: |
+  ALWAYS verify webhook signatures:
+    // Stripe (Node.js):
+    const sig = req.headers['stripe-signature'];
+    const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+
+    // PayPal:
+    // Verify via PayPal API or signature header
+
+  The raw body must be preserved (not parsed as JSON) before verification.
+  Use express.raw() or equivalent for the webhook route:
+    app.post('/webhook', express.raw({type: 'application/json'}), handler);
+  NEVER trust webhook data without cryptographic verification.

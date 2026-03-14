@@ -1,0 +1,56 @@
+id: SSRF_DYNAMIC_FETCH
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-918"
+source:
+  name: "CWE-918: Server-Side Request Forgery (SSRF)"
+  quote: "The web server receives a URL or similar request from an upstream component and retrieves the contents of this URL, but it does not sufficiently ensure that the request is being sent to the expected destination."
+  verified: true
+  verified_date: "2026-03-14"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  # fetch() with a variable (not a string literal) - server-side only
+  - "fetch\\s*\\(\\s*(req\\.|request\\.|body\\.|params\\.|query\\.|args\\.|input\\.|data\\.)"
+  - "fetch\\s*\\(\\s*[a-zA-Z_][a-zA-Z0-9_]*(Url|URL|Uri|URI|url|uri|endpoint|href|link|src|source|target|destination|address)\\s*[,)]"
+  # axios with dynamic URL from user input
+  - "axios\\.(get|post|put|patch|delete)\\s*\\(\\s*(req\\.|request\\.|body\\.|params\\.|query\\.)"
+  - "axios\\.(get|post|put|patch|delete)\\s*\\(\\s*[a-zA-Z_][a-zA-Z0-9_]*(Url|URL|Uri|URI|url|uri|endpoint|href|link)\\s*[,)]"
+  # http.get / https.get with dynamic URL
+  - "https?\\.(get|request)\\s*\\(\\s*(req\\.|request\\.|body\\.|params\\.|query\\.)"
+  # got() with dynamic URL
+  - "got\\s*\\(\\s*(req\\.|request\\.|body\\.|params\\.|query\\.)"
+case_insensitive: false
+exclude_paths:
+  - "src/"
+  - "pages/"
+  - "components/"
+  - "views/"
+  - "app/"
+  - "public/"
+  - "static/"
+  - "client/"
+  - "frontend/"
+message: "Server-side fetch/request with user-controlled URL detected. An attacker can make your server request internal resources (localhost, 169.254.169.254 metadata, private IPs) to scan your network or steal cloud credentials."
+fix: |
+  VALIDATE the URL before fetching:
+    const { URL } = require('url');
+    function validateUrl(input) {
+      const parsed = new URL(input);
+      const ip = await dns.resolve(parsed.hostname);
+      // Block private IPs (RFC 1918), loopback, link-local, metadata
+      const blocked = /^(127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|0\.)/;
+      if (blocked.test(ip)) throw new Error('SSRF blocked');
+      // Whitelist allowed protocols
+      if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Invalid protocol');
+      return parsed.href;
+    }
+  Use an SSRF protection library (ssrf-req-filter for Node.js).
+  NEVER pass user input directly to fetch/axios/http.get.

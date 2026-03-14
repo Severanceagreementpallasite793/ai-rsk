@@ -1,0 +1,28 @@
+id: XPOWEREDBY_EXPOSED
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-497"
+source:
+  name: "OWASP Secure Headers Project"
+  quote: "Remove the X-Powered-By header to prevent information disclosure"
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  - 'express\(\)'
+negation: true
+negation_pattern: 'app\.disable\s*\(\s*[''"]x-powered-by[''"]|helmet\s*\('
+message: "Express app detected without X-Powered-By header disabled. This leaks server technology to attackers."
+fix: |
+  Add one of these lines after creating your Express app:
+    app.disable('x-powered-by');
+  Or use helmet (recommended):
+    app.use(helmet());

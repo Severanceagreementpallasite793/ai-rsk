@@ -1,0 +1,70 @@
+id: EVAL_DYNAMIC
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-95"
+source:
+  name: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+  quote: "The product receives input from an upstream component, but it does not neutralize or incorrectly neutralizes code syntax before inserting the input into an executable resource, such as a library, configuration file, or template."
+  verified: true
+  verified_date: "2026-03-14"
+languages:
+  - javascript
+  - typescript
+  - python
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.jsx"
+  - "*.tsx"
+  - "*.mjs"
+  - "*.cjs"
+  - "*.py"
+patterns:
+  # eval() with any variable (not a static string)
+  - "eval\\s*\\(\\s*[a-zA-Z_]"
+  - "eval\\s*\\(\\s*`"
+  - "eval\\s*\\(\\s*\\$"
+  # new Function() with variable
+  - "new\\s+Function\\s*\\(.*[a-zA-Z_][a-zA-Z0-9_]*"
+  # setTimeout/setInterval with string argument (acts as eval)
+  - "setTimeout\\s*\\(\\s*['\"`][^'\"`]*[a-zA-Z_]"
+  - "setInterval\\s*\\(\\s*['\"`][^'\"`]*[a-zA-Z_]"
+  # Python exec() with variable - standalone call, not a method call.
+  # Must NOT match JavaScript's RegExp.prototype.exec() or child_process .exec() method calls.
+  # Match only: exec(variable) at start of line or after whitespace/assignment/semicolon.
+  - "(?:^|[;=\\s(,])exec\\s*\\(\\s*[a-zA-Z_]"
+  # Node.js child_process exec with variable (dangerous command injection)
+  - "child_process.*exec\\s*\\("
+  - "require\\s*\\(\\s*['\"]child_process['\"]\\s*\\).*exec\\s*\\("
+  - "\\bexec\\s*=.*promisify.*child_process"
+  - "eval\\s*\\(\\s*f['\"]"
+case_insensitive: false
+exclude_paths:
+  - "test/"
+  - "tests/"
+  - "__tests__/"
+  - "spec/"
+  - "node_modules/"
+  - "vendor/"
+message: "Dynamic code execution (eval/exec/new Function) with variable input detected. If the input comes from a user, database, or external source, an attacker can execute arbitrary code on your server or in the browser. This is one of the most dangerous vulnerabilities possible."
+fix: |
+  NEVER use eval/exec with dynamic input.
+  Alternatives:
+    // WRONG:
+    eval(userInput);
+    new Function('return ' + userExpression)();
+
+    // RIGHT - use JSON.parse for data:
+    const data = JSON.parse(userInput);
+
+    // RIGHT - use a safe expression parser for math:
+    import { evaluate } from 'mathjs';
+    const result = evaluate(userExpression);
+
+    // RIGHT - use a whitelist for dynamic behavior:
+    const actions = { add: addFn, remove: removeFn };
+    const fn = actions[userChoice];
+    if (fn) fn();
+
+  If you absolutely must evaluate dynamic code, use a sandboxed environment (vm2, isolated-vm).

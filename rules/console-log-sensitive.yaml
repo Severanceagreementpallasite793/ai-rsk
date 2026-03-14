@@ -1,0 +1,42 @@
+id: CONSOLE_LOG_SENSITIVE
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-532"
+source:
+  name: "CWE-532: Insertion of Sensitive Information into Log File"
+  quote: "The product writes sensitive information to a log file."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.jsx"
+  - "*.tsx"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  # Match sensitive VARIABLES passed to console.log as identifiers:
+  # The keyword must appear after ( , { [ . $ - context where a JS identifier starts.
+  # Does NOT match keywords inside string literals (preceded by letter or space inside quotes).
+  # Catches: console.log(password), console.log(data.secret), console.log({apiKey}), ${password}
+  # Avoids: console.log('copy password:'), console.log('internal secret.')
+  - "console\\.(log|info|debug|warn|error)\\s*\\([^)]*[(,{\\[.\\$](password|passwd|secret|apiKey|api_key|credential|ssn)\\b"
+  - "console\\.(log|info|debug|warn|error)\\s*\\([^)]*[(,{\\[.\\$](credit.?card)\\b"
+  # req.body / req.headers / process.env are ALWAYS dangerous to log (they are objects, not strings)
+  - "console\\.(log|info|debug|warn|error)\\s*\\(.*(req\\.body|req\\.headers|req\\.cookies|request\\.body|request\\.headers)"
+  # process.env logged as direct argument (not in a ternary existence check like process.env.X ? 'SET' : 'MISSING')
+  - "console\\.(log|info|debug|warn|error)\\s*\\(.*process\\.env(\\.[A-Z_]+)?\\s*[,)]"
+case_insensitive: false
+message: "console.log with sensitive data detected. Even in development, logging passwords, tokens, headers, or request bodies creates a habit that leaks to production. Use a structured logger (winston, pino) with sensitive field filtering."
+fix: |
+  REMOVE the sensitive data from the log statement.
+  Use a structured logger with filtering:
+    // pino example:
+    const logger = pino({ redact: ['req.headers.authorization', 'req.headers.cookie'] });
+    logger.info({ userId: user.id }, 'User logged in');
+  NEVER log: passwords, tokens, full request bodies, full headers, env vars.
+  Log only what you need for debugging: IDs, timestamps, action names.

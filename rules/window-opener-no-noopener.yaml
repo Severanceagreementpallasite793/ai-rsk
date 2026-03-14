@@ -1,0 +1,34 @@
+id: WINDOW_OPENER_NO_NOOPENER
+version: 1
+severity: WARN
+cwe:
+  - "CWE-1022"
+source:
+  name: "CWE-1022: Use of Web Link to Untrusted Target with window.opener Access"
+  quote: "The web application produces links to untrusted external sites outside of its sphere of control, but it does not properly prevent the external site from modifying security-critical properties of the window.opener object."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - html
+  - javascript
+  - typescript
+file_patterns:
+  - "*.html"
+  - "*.htm"
+  - "*.jsx"
+  - "*.tsx"
+  - "*.vue"
+  - "*.svelte"
+patterns:
+  - "target\\s*=\\s*['\"`]_blank['\"`]"
+negation: true
+negation_pattern: "rel\\s*=\\s*['\"`][^'\"]*noopener"
+case_insensitive: true
+message: "Link with target=\"_blank\" detected without rel=\"noopener\". The opened page can access window.opener and redirect your page to a phishing site (tabnabbing attack)."
+fix: |
+  Add rel="noopener noreferrer" to all external links with target="_blank":
+    <a href="https://external.com" target="_blank" rel="noopener noreferrer">Link</a>
+  In React/JSX:
+    <a href={url} target="_blank" rel="noopener noreferrer">Link</a>
+  Modern browsers (2021+) add noopener by default for target="_blank",
+  but explicit is safer for older browser support.

@@ -1,0 +1,53 @@
+id: UNVALIDATED_REDIRECT
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-601"
+source:
+  name: "CWE-601: URL Redirection to Untrusted Site ('Open Redirect')"
+  quote: "A web application accepts a user-controlled input that specifies a link to an external site, and uses that link in a Redirect. This simplifies phishing attacks."
+  verified: true
+  verified_date: "2026-03-14"
+languages:
+  - javascript
+  - typescript
+  - python
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+  - "*.py"
+patterns:
+  # res.redirect with user input (Express)
+  - "res\\.redirect\\s*\\(\\s*(req\\.|request\\.|body\\.|params\\.|query\\.)"
+  - "res\\.redirect\\s*\\(\\s*[a-zA-Z_][a-zA-Z0-9_]*(Url|URL|Uri|URI|url|uri|redirect|returnTo|returnUrl|return_url|next|callback|continue|goto|dest|destination|target|redir|forward)\\s*\\)"
+  # Location header with user input
+  - "setHeader\\s*\\(\\s*['\"`]Location['\"`]\\s*,\\s*(req\\.|request\\.|body\\.|params\\.|query\\.)"
+  - "res\\.set\\s*\\(\\s*['\"`]Location['\"`]\\s*,\\s*(req\\.|request\\.|body\\.|params\\.|query\\.)"
+  # Python redirect with user input
+  - "redirect\\s*\\(\\s*request\\.(args|form|values|GET|POST)\\["
+  # window.location with URL param (client-side open redirect)
+  - "window\\.location\\s*=\\s*.*(searchParams|URLSearchParams|location\\.search|location\\.hash|query\\.|getParameter)"
+case_insensitive: false
+message: "Open redirect detected - user-controlled URL in redirect. An attacker can craft a link like https://yoursite.com/login?returnTo=https://evil.com that looks legitimate but redirects users to a phishing page. This is used to steal credentials after real authentication."
+fix: |
+  VALIDATE redirect URLs against a whitelist:
+    // WRONG - user controls redirect destination:
+    res.redirect(req.query.returnTo);
+
+    // RIGHT - whitelist of allowed paths:
+    const allowedPaths = ['/dashboard', '/profile', '/settings'];
+    const target = req.query.returnTo;
+    if (allowedPaths.includes(target)) {
+      res.redirect(target);
+    } else {
+      res.redirect('/dashboard'); // safe default
+    }
+
+    // RIGHT - only allow relative paths (no protocol):
+    function isSafeRedirect(url) {
+      return url.startsWith('/') && !url.startsWith('//');
+    }
+
+  NEVER pass user input directly to res.redirect() or window.location.

@@ -1,0 +1,32 @@
+id: JWT_SENSITIVE_PAYLOAD
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-312"
+source:
+  name: "CWE-312: Cleartext Storage of Sensitive Information"
+  quote: "The product stores sensitive information in cleartext within a resource that might be accessible to another control sphere."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  - "jwt\\.sign\\s*\\(\\s*\\{[^}]*(password|passwd|secret|credit.?card|ssn|social.?security|address|phone|email|salary|bank)"
+  - "sign\\s*\\(\\s*\\{[^}]*(password|passwd|secret|credit.?card|ssn|social.?security|address|phone)"
+case_insensitive: true
+message: "Sensitive data in JWT payload. A JWT is signed but NOT encrypted - the payload is base64-encoded cleartext. Anyone with the token can decode it and read all fields. Only store minimal identifiers (sub, jti, role)."
+fix: |
+  Keep JWT payloads minimal:
+    // WRONG - exposes PII in cleartext:
+    jwt.sign({ userId: 1, email: 'user@example.com', password: hash, address: '...' }, secret)
+
+    // RIGHT - minimal payload:
+    jwt.sign({ sub: user.id, jti: uuidv4() }, secret, { expiresIn: '15m' })
+  Fetch user details from the database using the sub claim.
+  NEVER put passwords, emails, addresses, or any PII in a JWT payload.

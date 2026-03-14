@@ -1,0 +1,52 @@
+id: NO_HELMET
+version: 1
+severity: WARN
+cwe:
+  - "CWE-693"
+source:
+  name: "CWE-693: Protection Mechanism Failure"
+  quote: "The product does not use or incorrectly uses a protection mechanism that provides sufficient defense against directed attacks against the product."
+  verified: true
+  verified_date: "2026-03-14"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  # Express app creation without helmet
+  - "express\\s*\\(\\s*\\)"
+negation: true
+negation_pattern: "helmet|secure_headers|lusca"
+case_insensitive: false
+exclude_paths:
+  - "src/"
+  - "pages/"
+  - "components/"
+  - "views/"
+  - "app/"
+  - "public/"
+  - "static/"
+  - "client/"
+  - "frontend/"
+  - "test/"
+  - "tests/"
+message: "Express app detected without helmet() middleware. helmet() sets critical security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, etc.) in a single line. Without it, your app is missing multiple layers of defense against XSS, clickjacking, MIME sniffing, and other browser-based attacks."
+fix: |
+  Install and use helmet:
+    npm install helmet
+
+    const helmet = require('helmet');
+    const app = express();
+    app.use(helmet());  // Sets 11+ security headers
+
+  For Fastify, use @fastify/helmet:
+    npm install @fastify/helmet
+    await fastify.register(helmet);
+
+  For Koa, use koa-helmet:
+    npm install koa-helmet
+    app.use(helmet());

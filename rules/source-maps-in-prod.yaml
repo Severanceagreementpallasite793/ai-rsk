@@ -1,0 +1,33 @@
+id: SOURCE_MAPS_IN_PROD
+version: 1
+severity: WARN
+cwe:
+  - "CWE-540"
+source:
+  name: "CWE-540: Inclusion of Sensitive Information in Source Code"
+  quote: "Source code on a web server or repository often contains sensitive information and should generally not be accessible to users."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  - "sourceMappingURL\\s*="
+  - "devtool\\s*:\\s*['\"`](source-map|eval-source-map|cheap-source-map|inline-source-map)"
+  - "[Ss]ource[Mm]ap\\s*:\\s*true"
+  - "productionSourceMap\\s*:\\s*true"
+case_insensitive: false
+message: "Source maps detected in code that may ship to production. Source maps expose your original source code, internal paths, variable names, and business logic to anyone who opens DevTools."
+fix: |
+  Ensure source maps are NOT shipped to production:
+  Webpack: set devtool to false (or 'hidden-source-map' if you need server-side debugging):
+    module.exports = { devtool: process.env.NODE_ENV === 'production' ? false : 'source-map' };
+  Vite: set build.sourcemap to false:
+    export default { build: { sourcemap: false } };
+  If you need source maps for error tracking (Sentry, GlitchTip), use 'hidden-source-map'
+  and upload maps to the service - never serve them publicly.

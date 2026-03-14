@@ -1,0 +1,33 @@
+id: MISSING_XCONTENT_TYPE
+version: 1
+severity: WARN
+cwe:
+  - "CWE-693"
+source:
+  name: "CWE-693: Protection Mechanism Failure"
+  quote: "The product does not use or incorrectly uses a protection mechanism that provides sufficient defense against directed attacks."
+  note: "No specific CWE exists for MIME sniffing. CWE-16 (Configuration) is a category and prohibited for mapping. CWE-693 is the closest applicable weakness."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  - "(app|server|router)\\.(use|get|listen)\\s*\\("
+negation: true
+negation_pattern: "x-content-type-options|noSniff|nosniff|helmet\\s*\\("
+case_insensitive: true
+message: "Server code detected without X-Content-Type-Options header. Without 'nosniff', browsers may MIME-sniff responses and execute uploaded files as scripts, enabling XSS via file upload."
+fix: |
+  Add X-Content-Type-Options. Using helmet (recommended):
+    app.use(helmet());
+  Or manually:
+    app.use((req, res, next) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      next();
+    });

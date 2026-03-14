@@ -1,0 +1,58 @@
+id: SELECT_STAR_RESPONSE
+version: 1
+severity: WARN
+cwe:
+  - "CWE-202"
+source:
+  name: "CWE-202: Exposure of Sensitive Information Through Data Queries"
+  quote: "The product creates a data query but does not restrict its results to only the desired data."
+  note: "CWE-202 is a more specific child of CWE-200 (class-level, discouraged). CWE-202 directly addresses over-fetching via queries."
+  verified: true
+  verified_date: "2026-03-14"
+languages:
+  - javascript
+  - typescript
+  - python
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+  - "*.py"
+patterns:
+  # SELECT * in any SQL query string
+  - "SELECT\\s+\\*\\s+FROM"
+  # Prisma findMany/findFirst/findUnique without select (returns all columns)
+  # Only match when followed by res.json or response - otherwise it's internal use
+  - "findMany\\s*\\(\\s*\\{[^}]*where"
+  - "findFirst\\s*\\(\\s*\\{[^}]*where"
+  - "findUnique\\s*\\(\\s*\\{[^}]*where"
+negation: true
+negation_pattern: "select\\s*:|select\\s*=|omit\\s*:|exclude\\s*:|pick\\s*\\(|pluck\\s*\\(|attributes\\s*:|only\\s*\\("
+case_insensitive: true
+exclude_paths:
+  - "src/"
+  - "pages/"
+  - "components/"
+  - "views/"
+  - "client/"
+  - "frontend/"
+  - "test/"
+  - "tests/"
+  - "migrations/"
+  - "seeds/"
+message: "Database query fetching all columns detected without field filtering. SELECT * or ORM queries without 'select' return every column including sensitive fields (password_hash, api_key, internal_id, salary). If this data reaches a JSON response, it leaks to the client."
+fix: |
+  ALWAYS specify which columns to return:
+    // WRONG - returns everything including password_hash:
+    SELECT * FROM users WHERE id = $1;
+    prisma.user.findUnique({ where: { id } });
+
+    // RIGHT - explicit columns:
+    SELECT id, name, email FROM users WHERE id = $1;
+    prisma.user.findUnique({ where: { id }, select: { id: true, name: true, email: true } });
+
+    // RIGHT - exclude sensitive fields:
+    prisma.user.findUnique({ where: { id }, omit: { passwordHash: true, apiKey: true } });
+
+  Use DTOs or response schemas (Zod, Joi) to ensure only public fields reach res.json().

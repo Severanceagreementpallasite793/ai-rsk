@@ -1,0 +1,36 @@
+id: TOKEN_IN_LOCALSTORAGE
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-922"
+  - "CWE-312"
+source:
+  name: "OWASP HTML5 Security Cheat Sheet"
+  quote: "Do not store session identifiers in local storage as the data is always accessible by JavaScript"
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.jsx"
+  - "*.tsx"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  # Match localStorage/sessionStorage with auth-related keys.
+  # Pattern structure: optional prefix (word_), then keyword, then optional suffix (word), then closing quote.
+  # This avoids matching compound names where the keyword is a minor substring (e.g., expired_tokens_reminder).
+  - 'localStorage\.(set|get)Item\(\s*[''"`]([a-z]*[_\-])?(token|jwt|auth|session|refresh|bearer|oauth|credential|apikey)([_\-]?[a-z]*)?[''"`]'
+  - 'sessionStorage\.(set|get)Item\(\s*[''"`]([a-z]*[_\-])?(token|jwt|auth|session|refresh|bearer|oauth|credential|apikey)([_\-]?[a-z]*)?[''"`]'
+  - 'localStorage\[.*(token|jwt|auth|session|refresh|bearer|oauth)'
+case_insensitive: true
+message: "Authentication token stored in localStorage/sessionStorage. Any XSS vulnerability allows an attacker to steal all user tokens."
+fix: |
+  BACKEND: Set token as HttpOnly cookie:
+    res.cookie('token', jwtValue, { httpOnly: true, secure: true, sameSite: 'strict' });
+  FRONTEND: Use credentials: 'include' instead of manual Authorization header:
+    fetch('/api/data', { credentials: 'include' })
+  REMOVE the localStorage.setItem/getItem calls for tokens entirely.

@@ -1,0 +1,44 @@
+id: DANGEROUSLYSETINNERHTML_DYNAMIC
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-79"
+source:
+  name: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+  quote: "The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web page that is served to other users."
+  verified: true
+  verified_date: "2026-03-14"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.jsx"
+  - "*.tsx"
+  - "*.js"
+  - "*.ts"
+patterns:
+  # dangerouslySetInnerHTML with any dynamic content
+  - "dangerouslySetInnerHTML\\s*=\\s*\\{\\{\\s*__html\\s*:"
+  # v-html directive (Vue)
+  - "v-html\\s*=\\s*['\"`]"
+  # [innerHTML] binding (Angular)
+  - "\\[innerHTML\\]\\s*=\\s*['\"`]"
+case_insensitive: false
+negation: true
+negation_pattern: "DOMPurify|sanitize|purify|rehype-sanitize|xss-filters|sanitize-html|isomorphic-dompurify"
+message: "Raw HTML injection without sanitization detected. dangerouslySetInnerHTML, v-html, and [innerHTML] render raw HTML in the browser. If this content comes from user input, API responses, or database records, an attacker can inject scripts that steal cookies, credentials, or redirect users to malicious sites."
+fix: |
+  ALWAYS sanitize HTML before rendering:
+    // React with DOMPurify:
+    import DOMPurify from 'dompurify';
+    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} />
+
+    // Vue:
+    <div v-html="sanitize(content)"></div>
+
+    // Markdown rendering - use rehype-sanitize:
+    import rehypeSanitize from 'rehype-sanitize';
+    <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{content}</ReactMarkdown>
+
+  If you render AI/LLM responses as HTML or Markdown, ALWAYS sanitize.
+  The LLM itself can be tricked into generating malicious HTML.

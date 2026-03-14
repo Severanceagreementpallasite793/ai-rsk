@@ -1,0 +1,30 @@
+id: CDN_SCRIPT_NO_SRI
+version: 1
+severity: WARN
+cwe:
+  - "CWE-353"
+source:
+  name: "CWE-353: Missing Support for Integrity Check"
+  quote: "The product uses a transmission protocol that does not include a mechanism for verifying the integrity of the data during transmission, such as a checksum."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - html
+file_patterns:
+  - "*.html"
+  - "*.htm"
+patterns:
+  - "<script\\s+[^>]*src\\s*=\\s*['\"`]https?://"
+negation: true
+negation_pattern: "integrity\\s*=\\s*['\"`]sha"
+case_insensitive: true
+message: "External script loaded from CDN without Subresource Integrity (SRI). If the CDN is compromised, malicious code runs in your users' browsers with full access to their session."
+fix: |
+  Add an integrity attribute to all external scripts:
+    <script src="https://cdn.example.com/lib.js"
+            integrity="sha384-abc123..."
+            crossorigin="anonymous"></script>
+  Generate the hash with:
+    openssl dgst -sha384 -binary lib.js | openssl base64 -A
+  Or use https://www.srihash.org/ to generate the attribute.
+  Also add crossorigin="anonymous" for CORS compliance.

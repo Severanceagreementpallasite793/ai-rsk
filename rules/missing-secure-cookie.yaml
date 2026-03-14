@@ -1,0 +1,27 @@
+id: MISSING_SECURE_COOKIE
+version: 2
+severity: BLOCK
+cwe:
+  - "CWE-614"
+source:
+  name: "OWASP Session Management Cheat Sheet"
+  quote: "The Secure cookie attribute instructs web browsers to only send the cookie through an encrypted HTTPS connection"
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  - '\.cookie\s*\('
+negation: true
+negation_pattern: 'secure\s*:\s*true'
+case_insensitive: false
+message: "Cookie set without Secure flag. The cookie will be sent over unencrypted HTTP, exposing it to interception."
+fix: |
+  Add secure: true to your cookie options:
+    res.cookie('session', value, { httpOnly: true, secure: true, sameSite: 'strict' });

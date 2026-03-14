@@ -1,0 +1,37 @@
+id: POSTMESSAGE_NO_ORIGIN
+version: 1
+severity: BLOCK
+cwe:
+  - "CWE-346"
+source:
+  name: "CWE-346: Origin Validation Error"
+  quote: "The product does not properly verify that the source of data or communication is valid."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.jsx"
+  - "*.tsx"
+  - "*.mjs"
+  - "*.cjs"
+  - "*.html"
+  - "*.htm"
+  - "*.vue"
+  - "*.svelte"
+patterns:
+  - "addEventListener\\s*\\(\\s*['\"`]message['\"`]"
+negation: true
+negation_pattern: "event\\.origin|e\\.origin|msg\\.origin|message\\.origin|origin\\s*[!=]==?"
+message: "postMessage event listener without origin validation. Any malicious page can send messages to your window. Without checking event.origin, an attacker can inject commands, steal data, or trigger actions."
+fix: |
+  ALWAYS verify the origin of incoming messages:
+    window.addEventListener('message', (event) => {
+      if (event.origin !== 'https://trusted-domain.com') return;
+      // Safe to process event.data
+    });
+  NEVER trust event.data without verifying event.origin first.
+  Use an allowlist of trusted origins, not a blocklist.

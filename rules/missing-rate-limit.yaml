@@ -1,0 +1,35 @@
+id: MISSING_RATE_LIMIT
+version: 1
+severity: WARN
+cwe:
+  - "CWE-770"
+source:
+  name: "CWE-770: Allocation of Resources Without Limits or Throttling"
+  quote: "The product allocates a reusable resource or group of resources on behalf of an actor without imposing any intended restrictions on the size or number of resources that can be allocated."
+  verified: true
+  verified_date: "2026-03-12"
+languages:
+  - javascript
+  - typescript
+file_patterns:
+  - "*.js"
+  - "*.ts"
+  - "*.mjs"
+  - "*.cjs"
+patterns:
+  # Match auth routes with any prefix: /login, /api/login, /v1/auth/login, /api/v2/signin, etc.
+  - "(app|router)\\.(post|put|patch)\\s*\\(\\s*['\"`][^'\"`]*/(login|signin|sign-in|auth|register|signup|sign-up|reset.?password|forgot.?password|verify|otp|token|refresh)"
+negation: true
+negation_pattern: "rateLimit|rate-limit|rateLimiter|slowDown|express-rate-limit|limiter"
+case_insensitive: true
+message: "Authentication/sensitive route detected without rate limiting. Without rate limiting, an attacker can brute-force credentials, flood password reset, or exhaust OTP attempts."
+fix: |
+  Add rate limiting to auth routes:
+    const rateLimit = require('express-rate-limit');
+    const loginLimiter = rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 10, // 10 attempts per window
+      message: 'Too many login attempts, try again later'
+    });
+    app.post('/login', loginLimiter, loginHandler);
+  Apply stricter limits to password reset and OTP endpoints.
