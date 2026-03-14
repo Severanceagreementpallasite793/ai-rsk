@@ -291,3 +291,4 @@ If ai-rsk helps you ship secure code, consider supporting the project:
 - Star this repo
 - Report false positives and false negatives
 - Contribute rules
+- [Fueling my open source work with coffee](https://github.com/sponsors/Krigsexe) 
