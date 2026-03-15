@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="https://res.cloudinary.com/dmlicmhuw/image/upload/v1773539798/airsk-sf_lp9ww8.png" alt="ai-rsk logo" width="200">
+</p>
+
+<p align="center">
   <strong>ai-rsk - Security gate for AI-generated code</strong>
 </p>
 
@@ -16,7 +20,11 @@
 </p>
 
 ---
-[![Visitors Badge](https://api.visitorbadge.io/api/VisitorHit?user=Krigsexe&repo=ai-rsk&countColor=%23FFA500)](https://github.com/Krigsexe/ai-rsk)
+<p align="center">
+  <a href="https://github.com/Krigsexe/ai-rsk">
+    <img src="https://api.visitorbadge.io/api/VisitorHit?user=Krigsexe&repo=ai-rsk&countColor=%23FFA500" alt="Visitors Badge">
+  </a>
+</p>
 
 ai-rsk blocks your build until security issues are fixed. One Rust binary. Three external tools. 31 built-in rules. Your AI can't deploy insecure code because the build won't pass.
 
