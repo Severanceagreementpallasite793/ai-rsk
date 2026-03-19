@@ -30,8 +30,7 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Scan the project for security issues, missing tools, and technical debt
-    #[command(
-        after_help = "Examples:\n  \
+    #[command(after_help = "Examples:\n  \
                         ai-rsk scan                  Scan current directory\n  \
                         ai-rsk scan /path/to/project Scan a specific path\n  \
                         ai-rsk scan --strict         Warnings become blockers\n  \
@@ -39,8 +38,7 @@ pub enum Commands {
                         ai-rsk scan --json           Machine-readable output for CI/CD\n  \
                         ai-rsk scan --gdpr           Add GDPR compliance checks\n  \
                         ai-rsk scan --all            All profiles (security+gdpr+ai-act+seo+a11y)\n\n\
-                      Tip: just run 'ai-rsk' without arguments to scan the current directory."
-    )]
+                      Tip: just run 'ai-rsk' without arguments to scan the current directory.")]
     Scan {
         /// Path to scan (defaults to current directory)
         #[arg(default_value = ".")]
@@ -84,13 +82,11 @@ pub enum Commands {
     },
 
     /// Initialize ai-rsk in the current project (generate config, hooks, LLM rules)
-    #[command(
-        after_help = "Examples:\n  \
+    #[command(after_help = "Examples:\n  \
                         ai-rsk init                  Set up the current project\n  \
                         ai-rsk init /path/to/project Set up a specific project\n\n\
                       This creates: config file, security rules, LLM discipline files, git hooks.\n\
-                      Run this once when you start using ai-rsk on a project."
-    )]
+                      Run this once when you start using ai-rsk on a project.")]
     Init {
         /// Path to initialize (defaults to current directory)
         #[arg(default_value = ".")]
@@ -109,10 +105,8 @@ pub enum Commands {
     },
 
     /// Update ai-rsk to the latest version
-    #[command(
-        after_help = "Checks crates.io for a newer version and installs it.\n\
-                      Uses cargo if available, otherwise downloads from GitHub Releases."
-    )]
+    #[command(after_help = "Checks crates.io for a newer version and installs it.\n\
+                      Uses cargo if available, otherwise downloads from GitHub Releases.")]
     Update,
 }
 

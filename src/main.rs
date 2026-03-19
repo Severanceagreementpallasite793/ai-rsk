@@ -312,7 +312,11 @@ fn run() -> Result<()> {
                                     disabled_count
                                 );
                             } else {
-                                println!("  {} Scanning {} rules...", "[2/3]".cyan(), active_rules.len());
+                                println!(
+                                    "  {} Scanning {} rules...",
+                                    "[2/3]".cyan(),
+                                    active_rules.len()
+                                );
                             }
                         }
                         match rules::scan_files(&path, &active_rules, &config.exclude) {
@@ -549,7 +553,11 @@ fn run() -> Result<()> {
                         "\n  {} Fix the {} {} first - the build is blocked until they are resolved.",
                         "Next:".bold(),
                         blocks,
-                        if blocks == 1 { "BLOCK finding" } else { "BLOCK findings" }
+                        if blocks == 1 {
+                            "BLOCK finding"
+                        } else {
+                            "BLOCK findings"
+                        }
                     );
                     if warns > 0 {
                         println!(
@@ -558,16 +566,17 @@ fn run() -> Result<()> {
                             if warns == 1 { "WARN" } else { "WARNs" }
                         );
                     }
-                    println!(
-                        "  After fixing, run {} to verify.",
-                        "ai-rsk scan".cyan()
-                    );
+                    println!("  After fixing, run {} to verify.", "ai-rsk scan".cyan());
                 } else if warns > 0 && strict {
                     println!(
                         "\n  {} Fix the {} {} - strict mode is active.",
                         "Next:".bold(),
                         warns,
-                        if warns == 1 { "WARN finding" } else { "WARN findings" }
+                        if warns == 1 {
+                            "WARN finding"
+                        } else {
+                            "WARN findings"
+                        }
                     );
                 } else if exit == 0 {
                     println!(

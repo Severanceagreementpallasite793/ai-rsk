@@ -72,15 +72,14 @@ pub fn run_self_update() {
 
         match status {
             Ok(s) if s.success() => {
-                println!(
-                    "\n  {} ai-rsk updated to {}",
-                    "✓".green(),
-                    latest.bold()
-                );
+                println!("\n  {} ai-rsk updated to {}", "✓".green(), latest.bold());
                 return;
             }
             _ => {
-                eprintln!("  {} cargo install failed. Trying GitHub Releases...", "!".yellow());
+                eprintln!(
+                    "  {} cargo install failed. Trying GitHub Releases...",
+                    "!".yellow()
+                );
             }
         }
     }
@@ -132,14 +131,24 @@ pub fn run_self_update() {
         // Extract
         let extract_ok = if asset.ends_with(".tar.gz") {
             std::process::Command::new("tar")
-                .args(["-xzf", &dl_path.to_string_lossy(), "-C", &tmp_dir.to_string_lossy()])
+                .args([
+                    "-xzf",
+                    &dl_path.to_string_lossy(),
+                    "-C",
+                    &tmp_dir.to_string_lossy(),
+                ])
                 .status()
                 .map(|s| s.success())
                 .unwrap_or(false)
         } else {
             // zip on Windows
             std::process::Command::new("tar")
-                .args(["-xf", &dl_path.to_string_lossy(), "-C", &tmp_dir.to_string_lossy()])
+                .args([
+                    "-xf",
+                    &dl_path.to_string_lossy(),
+                    "-C",
+                    &tmp_dir.to_string_lossy(),
+                ])
                 .status()
                 .map(|s| s.success())
                 .unwrap_or(false)
@@ -165,11 +174,7 @@ pub fn run_self_update() {
                                 std::fs::Permissions::from_mode(0o755),
                             );
                         }
-                        println!(
-                            "  {} ai-rsk updated to {}",
-                            "✓".green(),
-                            latest.bold()
-                        );
+                        println!("  {} ai-rsk updated to {}", "✓".green(), latest.bold());
                         std::fs::remove_dir_all(&tmp_dir).ok();
                         return;
                     }
@@ -209,10 +214,7 @@ pub fn run_self_update() {
     // Cleanup
     std::fs::remove_dir_all(&tmp_dir).ok();
     eprintln!("  {} Auto-update failed.", "!".red());
-    eprintln!(
-        "  Install manually: {}",
-        "cargo install ai-rsk".cyan()
-    );
+    eprintln!("  Install manually: {}", "cargo install ai-rsk".cyan());
     std::process::exit(1);
 }
 
