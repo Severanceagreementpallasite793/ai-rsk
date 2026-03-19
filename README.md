@@ -51,7 +51,7 @@ ai-rsk makes this impossible. The build doesn't pass. The LLM is forced to fix t
 ```
 $ ai-rsk scan --all
 
-ai-rsk v0.7.1 - Security Gate + Project Analysis
+ai-rsk vX.X.X - Security Gate + Project Analysis
 ===================================================
   Profiles: security, gdpr, ai-act, seo, a11y
   Ecosystems: JavaScript/TypeScript
